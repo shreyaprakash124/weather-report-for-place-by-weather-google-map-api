@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCekd78o9jSk6AIOyFJSLWSEbFRAyZeFew&libraries=places"></script>
+</head>
+
+<body>
+    <input type="text" id="autocomplete" type="text" size="50" placeholder="Where would you like to go today" />
+    <button type="button" onClick="getWeatherDetails()">Go!</button>
+    <div class="weatherDetails"></div>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <script type="text/javascript">
+        var input = document.getElementById('autocomplete');
+        var offsetValue;
+        var autocomplete = new google.maps.places.Autocomplete(input, { types: ['(cities)'] });
+        google.maps.event.addListener(autocomplete, 'place_changed', function () {
+            var place = autocomplete.getPlace();
+            offsetValue = place.utc_offset_minutes;
+        })
+        function getWeatherDetails() {
+            $('.weatherDetails').html('');
+            var val = $('#autocomplete').val();
+            var apiEndPoint = `http://api.openweathermap.org/data/2.5/weather?q=${val.substr(0, val.indexOf(','))}&appid=a660e3ccd369ba78bc5f1c79b0922410`;
+            $.getJSON(apiEndPoint, weatherCallBack);
+            function weatherCallBack(weatherData) {
+                var cityName = weatherData.name;
+                var countryName = weatherData.sys.country;
+                var description = weatherData.weather[0].description;
+                var currentDateTimeString = new Date(weatherData.dt * 1000);
+                console.log(weatherData)
+                $('.weatherDetails').append("The weather details of " + cityName + " " + countryName + "is currently " + description 
+                + " and current time at " + cityName + " is " + new Date(getDateWithUTCOffset(offsetValue)));
+            }
+        }
+
+        function getDateWithUTCOffset(inputTimeZoneOffset) {
+            var now = new Date();
+            var currentTimeZoneOffset = -now.getTimezoneOffset() / 60;
+            var deltaTimeZoneOffset = (inputTimeZoneOffset / 60) - currentTimeZoneOffset;
+            var nowTimestamp = now.getTime();
+            var deltaTimeZoneOffsetMilli = deltaTimeZoneOffset * 1000 * 60 * 60;
+            var outputDate = new Date(nowTimestamp + deltaTimeZoneOffsetMilli)
+            return outputDate;
+        }
+    </script>
+</body>
+
+</html>
